@@ -42,13 +42,15 @@ namespace FlaskeAutomat
                         {
                             if (products.Count < 20)
                             {
+                                //Creates a random number that is either 1 or 2
+                                //If the number is 1 it creates a beer and if it's 2 it creates a soda
                                 if (ran.Next(1, 3) == 1)
                                 {
-                                    products.Enqueue("Beer");
+                                    products.Enqueue("Øl ");
                                 }
                                 else
                                 {
-                                    products.Enqueue("Soda");
+                                    products.Enqueue("Vand ");
                                 }
                                 Console.WriteLine("Producer added items");
                             }
@@ -87,7 +89,7 @@ namespace FlaskeAutomat
                             {
                                 break;
                             }
-                            else if (product == "Beer")
+                            else if (product == "Øl ")
                             {
                                 beerLabel++;
                                 Console.WriteLine($"Added {product} {beerLabel}");
@@ -116,6 +118,7 @@ namespace FlaskeAutomat
             bool drinkInQueue;
             while (true)
             {
+                //Checks if the queue is empty and if it is then it goes to sleep
                 if (beer.Count > 0)
                 {
                     while (true)
@@ -127,6 +130,7 @@ namespace FlaskeAutomat
                         }
                         else
                         {
+                            //If the queue is empty it breaks out of the inner while loop and goes to sleep
                             break;
                         }
                     }
