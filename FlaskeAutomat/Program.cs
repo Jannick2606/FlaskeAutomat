@@ -11,6 +11,8 @@ namespace FlaskeAutomat
         static Queue<Drink> sodas = new Queue<Drink>(20);
         static Queue<Drink> products = new Queue<Drink>(20);
         static readonly object lock1 = new object();
+        static readonly object beerLock = new object();
+        static readonly object sodaLock = new object();
         static void Main(string[] args)
         {
             Thread t1 = new Thread(Producer);
@@ -51,14 +53,15 @@ namespace FlaskeAutomat
                                     beerLabel++;
                                     Beer b = new Beer("Øl", beerLabel);
                                     products.Enqueue(b);
+                                    Console.WriteLine($"Producer added {b.Type} {b.LabelNr}");
                                 }
                                 else
                                 {
                                     sodaLabel++;
                                     Soda s = new Soda("Vand", sodaLabel);
                                     products.Enqueue(s);
+                                    Console.WriteLine($"Producer added {s.Type} {s.LabelNr}");
                                 }
-                                Console.WriteLine("Producer added items");
                             }
                             else
                             {
@@ -99,13 +102,31 @@ namespace FlaskeAutomat
                             }
                             else if (product.Type == "Beer")
                             {
-                                Console.WriteLine($"Added {product.Type} {product.LabelNr}");
-                                beers.Enqueue(product);
+                                Monitor.TryEnter(beerLock);
+                                try
+                                {
+                                    Console.WriteLine($"Splitter moved {product.Type} {product.LabelNr}");
+                                    beers.Enqueue(product);
+                                }
+                                finally
+                                {
+                                    Monitor.PulseAll(beerLock);
+                                    Monitor.Wait(beerLock);
+                                }
                             }
                             else
                             {
-                                Console.WriteLine($"Added {product.Type} {product.LabelNr}");
-                                sodas.Enqueue(product);
+                                Monitor.TryEnter(sodaLock);
+                                try
+                                {
+                                    Console.WriteLine($"Splitter moved {product.Type} {product.LabelNr}");
+                                    sodas.Enqueue(product);
+                                }
+                                finally
+                                {
+                                    Monitor.PulseAll(sodaLock);
+                                    Monitor.Wait(sodaLock);
+                                }
                             }
                         }
                     }
@@ -129,21 +150,32 @@ namespace FlaskeAutomat
                 //Checks if the queue is empty and if it is then it goes to sleep
                 if (beers.Count > 0)
                 {
-                    while (true)
+                    Monitor.TryEnter(beerLock);
+                    try
                     {
-                        drinkInQueue = beers.TryDequeue(out beer);
-                        if (drinkInQueue == true)
+                        while (true)
                         {
-                            Console.WriteLine($"BeerConsumer drak {beer.Type} {beer.LabelNr}");
+
+                            drinkInQueue = beers.TryDequeue(out beer);
+                            if (drinkInQueue == true)
+                            {
+                                Console.WriteLine($"BeerConsumer drak {beer.Type} {beer.LabelNr}");
+                            }
+                            else
+                            {
+                                //If the queue is empty it breaks out of the inner while loop and goes to sleep
+                                break;
+                            }
                         }
-                        else
-                        {
-                            //If the queue is empty it breaks out of the inner while loop and goes to sleep
-                            break;
-                        }
+
+                    }
+                    finally
+                    {
+                        Monitor.PulseAll(beerLock);
+                        Monitor.Wait(beerLock);
                     }
                 }
-                Thread.Sleep(100 / 15);
+                Thread.Sleep(100);
             }
         }
         static void SodaConsumer()
@@ -154,20 +186,31 @@ namespace FlaskeAutomat
             {
                 if (sodas.Count > 0)
                 {
-                    while (true)
+                    Monitor.TryEnter(sodaLock);
+                    try
                     {
-                        drinkInQueue = sodas.TryDequeue(out soda);
-                        if (drinkInQueue == true)
+                        while (true)
                         {
-                            Console.WriteLine($"SodaConsumer drak {soda.Type} {soda.LabelNr}");
+
+                            drinkInQueue = sodas.TryDequeue(out soda);
+                            if (drinkInQueue == true)
+                            {
+                                Console.WriteLine($"SodaConsumer drak {soda.Type} {soda.LabelNr}");
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
-                        else
-                        {
-                            break;
-                        }
+
+                    }
+                    finally
+                    {
+                        Monitor.PulseAll(sodaLock);
+                        Monitor.Wait(sodaLock);
                     }
                 }
-                Thread.Sleep(100 / 15);
+                Thread.Sleep(100);
             }
         }
     }
