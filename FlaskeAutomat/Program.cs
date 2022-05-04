@@ -88,6 +88,10 @@ namespace FlaskeAutomat
                     {
                         while (true)
                         {
+                            //Tries to dequeue from the products queue
+                            //If the queue is empty it returns false and breaks out of the while loop
+                            //If it dequeues successfully, the product from the queue is stored in the variable called product
+                            //It then looks at the type of drink and determines if it should be put in the soda queue or beer queue
                             notFull = products.TryDequeue(out product);
                             if (notFull == false)
                             {
@@ -105,6 +109,8 @@ namespace FlaskeAutomat
                             }
                         }
                     }
+                    //In the finally block it lets thread1 know that the lock will be available
+                    //Then it releases the lock and waits for it to be available again
                     finally
                     {
                         Monitor.Pulse(lock1);
