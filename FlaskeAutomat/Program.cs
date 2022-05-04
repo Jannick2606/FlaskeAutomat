@@ -7,9 +7,9 @@ namespace FlaskeAutomat
     class Program
     {
         //products is the queue with both sodas and beer in it and it splits into 2 specific queues
-        static Queue<string> beer = new Queue<string>(20);
-        static Queue<string> sodas = new Queue<string>(20);
-        static Queue<string> products = new Queue<string>(20);
+        static Queue<Drink> beers = new Queue<Drink>(20);
+        static Queue<Drink> sodas = new Queue<Drink>(20);
+        static Queue<Drink> products = new Queue<Drink>(20);
         static readonly object lock1 = new object();
         static void Main(string[] args)
         {
@@ -31,6 +31,8 @@ namespace FlaskeAutomat
         static void Producer()
         {
             Random ran = new Random();
+            int beerLabel = 0;
+            int sodaLabel = 0;
             while (true)
             {
                 //Tries to acquire the lock it shares with thread2(The one that splits the queues)
@@ -46,11 +48,15 @@ namespace FlaskeAutomat
                                 //If the number is 1 it creates a beer and if it's 2 it creates a soda
                                 if (ran.Next(1, 3) == 1)
                                 {
-                                    products.Enqueue("Øl ");
+                                    beerLabel++;
+                                    Beer b = new Beer("Øl", beerLabel);
+                                    products.Enqueue(b);
                                 }
                                 else
                                 {
-                                    products.Enqueue("Vand ");
+                                    sodaLabel++;
+                                    Soda s = new Soda("Vand", sodaLabel);
+                                    products.Enqueue(s);
                                 }
                                 Console.WriteLine("Producer added items");
                             }
@@ -71,9 +77,7 @@ namespace FlaskeAutomat
         }
         static void Splitter()
         {
-            int sodaLabel = 0;
-            int beerLabel = 0;
-            string product;
+            Drink product;
             bool notFull;
             while (true)
             {
@@ -89,17 +93,15 @@ namespace FlaskeAutomat
                             {
                                 break;
                             }
-                            else if (product == "Øl ")
+                            else if (product.Type == "Beer")
                             {
-                                beerLabel++;
-                                Console.WriteLine($"Added {product} {beerLabel}");
-                                beer.Enqueue(product + beerLabel);
+                                Console.WriteLine($"Added {product.Type} {product.LabelNr}");
+                                beers.Enqueue(product);
                             }
                             else
                             {
-                                sodaLabel++;
-                                Console.WriteLine($"Added {product} {sodaLabel}");
-                                sodas.Enqueue(product + sodaLabel);
+                                Console.WriteLine($"Added {product.Type} {product.LabelNr}");
+                                sodas.Enqueue(product);
                             }
                         }
                     }
@@ -114,19 +116,19 @@ namespace FlaskeAutomat
         }
         static void BeerConsumer()
         {
-            string drink;
+            Drink beer;
             bool drinkInQueue;
             while (true)
             {
                 //Checks if the queue is empty and if it is then it goes to sleep
-                if (beer.Count > 0)
+                if (beers.Count > 0)
                 {
                     while (true)
                     {
-                        drinkInQueue = beer.TryDequeue(out drink);
+                        drinkInQueue = beers.TryDequeue(out beer);
                         if (drinkInQueue == true)
                         {
-                            Console.WriteLine($"BeerConsumer drak {drink}");
+                            Console.WriteLine($"BeerConsumer drak {beer.Type} {beer.LabelNr}");
                         }
                         else
                         {
@@ -140,7 +142,7 @@ namespace FlaskeAutomat
         }
         static void SodaConsumer()
         {
-            string drink;
+            Drink soda;
             bool drinkInQueue;
             while (true)
             {
@@ -148,10 +150,10 @@ namespace FlaskeAutomat
                 {
                     while (true)
                     {
-                        drinkInQueue = sodas.TryDequeue(out drink);
+                        drinkInQueue = sodas.TryDequeue(out soda);
                         if (drinkInQueue == true)
                         {
-                            Console.WriteLine($"SodaConsumer drak {drink}");
+                            Console.WriteLine($"SodaConsumer drak {soda.Type} {soda.LabelNr}");
                         }
                         else
                         {
