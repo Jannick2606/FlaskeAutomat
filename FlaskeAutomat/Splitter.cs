@@ -34,8 +34,9 @@ namespace FlaskeAutomat
                                     temp.Enqueue(product);
                                 }
                             }
-                            MoveToQueue(temp);
+                            
                         }
+                        MoveToQueue(temp);
                     }
                     finally
                     {
@@ -44,7 +45,7 @@ namespace FlaskeAutomat
                 }
             }
         }
-        public void MoveToQueue(Queue<Drink> drinks)
+        void MoveToQueue(Queue<Drink> drinks)
         {
             if (Monitor.TryEnter(Storage.beer))
             {

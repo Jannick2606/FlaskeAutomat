@@ -37,7 +37,7 @@ namespace FlaskeAutomat
                 }
             }
         }
-        public void EmptyQueue(Queue<Drink> drinks)
+        void EmptyQueue(Queue<Drink> drinks)
         {
             Drink drink;
             bool drinkInQueue;
@@ -48,7 +48,6 @@ namespace FlaskeAutomat
                     drinkInQueue = drinks.TryDequeue(out drink);
                     if (drinkInQueue == true)
                     {
-                        Console.WriteLine(drinks.Count);
                         Program.Print("Consumer", drink.Type, drink.Nr);
                     }
                     else
