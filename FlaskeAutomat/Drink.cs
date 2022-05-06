@@ -9,6 +9,6 @@ namespace FlaskeAutomat
     abstract class Drink
     {
         public abstract string Type { get; protected set; }
-        public abstract int LabelNr { get; protected set;}
+        public abstract int Nr { get; protected set;}
     }
 }

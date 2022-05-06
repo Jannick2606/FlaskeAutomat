@@ -8,12 +8,12 @@ namespace FlaskeAutomat
 {
     class Beer : Drink
     {
-        public Beer(string name, int nr)
+        public Beer(string type, int nr)
         {
-            Type = name;
-            LabelNr = nr;
+            Type = type;
+            Nr = nr;
         }
         public override string Type { get; protected set; }
-        public override int LabelNr { get; protected set; }
+        public override int Nr { get; protected set; }
     }
 }
